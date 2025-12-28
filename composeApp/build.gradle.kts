@@ -40,11 +40,7 @@ kotlin {
             isStatic = true
 
             // Keep the export line for the framework's visibility
-            export("platform.Network:Network")
-
-            // CORRECT WAY to add linker flags 🛠️
-            linkerOpts.add("-framework")
-            linkerOpts.add("Network")
+            linkerOpts.add("-lsqlite3")
         }
     }
 
