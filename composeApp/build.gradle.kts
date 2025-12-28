@@ -1,5 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -7,6 +8,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.buildConfig)
 }
 
 kotlin {
@@ -44,7 +46,7 @@ kotlin {
             linkerOpts.add("Network")
         }
     }
-    
+
     sourceSets {
         androidMain.dependencies {
             implementation(compose.preview)
@@ -111,6 +113,19 @@ kotlin {
     }
 }
 
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+
+buildConfig {
+    packageName("com.ishaan.kuluassignment")
+
+    val apiKey = localProperties.getProperty("apiKey")
+    buildConfigField("String", "TMDB_API_KEY", "\"$apiKey\"")
+}
+
 sqldelight {
     databases {
         create("MovieDatabase") { // This name becomes your main Database class
@@ -129,10 +144,6 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
-    }
-
-    buildFeatures {
-        buildConfig = true
     }
 
     packaging {

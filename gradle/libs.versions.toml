@@ -20,6 +20,7 @@ coroutines = "1.10.2"
 koin = "4.1.1"
 navigationCompose = "2.9.1"
 sqlDelight = "2.2.1"
+buildConfig = "6.0.7"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -62,3 +63,4 @@ composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMul
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
+buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig" }
