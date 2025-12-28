@@ -16,14 +16,16 @@ sealed class NetworkResponse<out T> {
     data class Error(val message: String) : NetworkResponse<Nothing>()
 }
 
-suspend inline fun <reified R> HttpResponse.convertToNetworkResponse(): NetworkResponse<R> {
-    if (!this.status.isSuccess()) {
-        return NetworkResponse.Error(this.status.description)
-    }
-
+suspend inline fun <reified T> HttpResponse.convertToNetworkResponse(): NetworkResponse<T> {
     return try {
-        NetworkResponse.Success(this.body<R>())
+        if (status.isSuccess()) {
+            val data = body<T>()
+            NetworkResponse.Success(data)
+        } else {
+            NetworkResponse.Error("Network error: ${status.value}")
+        }
     } catch (e: Exception) {
-        NetworkResponse.Error(e.message ?: "Something went wrong!")
+        e.printStackTrace()
+        NetworkResponse.Error("Parsing error: ${e.message}")
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.ishaan.kuluassignment.features.movie_list.view.MovieListScreen
 import com.ishaan.kuluassignment.navigation.MovieDetailScreen
 import com.ishaan.kuluassignment.navigation.MovieListScreen
 import com.ishaan.kuluassignment.navigation.MyAppNavHost
@@ -48,7 +49,11 @@ fun MyApp(
         composable(
             route = MovieListScreen.route
         ) {
+            MovieListScreen(
+                navigateToMovieDetail = {
 
+                }
+            )
         }
 
         composable(

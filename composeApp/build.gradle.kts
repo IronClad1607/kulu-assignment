@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.buildConfig)
+    kotlin("plugin.serialization")
 }
 
 kotlin {

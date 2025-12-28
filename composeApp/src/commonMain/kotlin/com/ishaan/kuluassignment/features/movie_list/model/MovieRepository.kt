@@ -6,6 +6,7 @@ import com.ishaan.kuluassignment.base.BaseRepository
 import com.ishaan.kuluassignment.db.MovieDatabase
 import com.ishaan.kuluassignment.networking.ClientProvider
 import com.ishaan.kuluassignment.networking.NetworkResponse
+import com.ishaan.kuluassignment.utils.Logger
 import io.ktor.http.HttpMethod
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -24,7 +25,7 @@ class MovieRepository(
         return movieDatabase.appDatabaseQueries.getLastPage().executeAsOne().MAX ?: 0
     }
 
-    suspend fun fetchAndSaveMovies(page: Int): Result<Unit> {
+    suspend fun fetchAndSaveMovies(page: Int, isRefresh: Boolean = false): Result<Unit> {
         val response = makeNetworkCall<GetTrendingMoviesResponse>(
             method = HttpMethod.Get,
             endpoint = "trending/movie/week",
@@ -33,13 +34,23 @@ class MovieRepository(
 
         return when (response) {
             is NetworkResponse.Error -> {
+                Logger.testLog.e {
+                    "Error fetching movies: ${response.message}"
+                }
                 Result.failure(Exception(response.message))
             }
 
             is NetworkResponse.Success<GetTrendingMoviesResponse> -> {
+                Logger.testLog.d {
+                    "movies success: ${response.data.page}"
+                }
                 val movies = response.data.movies
 
                 movieDatabase.transaction {
+                    if (isRefresh) {
+                        movieDatabase.appDatabaseQueries.deleteAllMovies()
+                    }
+
                     val startOrder = (page - 1) * 20
                     movies.forEachIndexed { index, movie ->
                         movieDatabase.appDatabaseQueries.insertMovie(
@@ -51,6 +62,12 @@ class MovieRepository(
                             page = page.toLong(),
                             sortOrder = (startOrder + index).toLong()
                         )
+                    }
+
+                    val moviesCached =
+                        movieDatabase.appDatabaseQueries.selectAllMovies().executeAsList()
+                    Logger.testLog.d {
+                        "moviesCached: ${moviesCached.size}"
                     }
                 }
                 Result.success(Unit)

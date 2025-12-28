@@ -6,6 +6,7 @@ import com.ishaan.kuluassignment.networking.convertToNetworkResponse
 import com.ishaan.kuluassignment.utils.Logger
 import io.ktor.client.request.request
 import io.ktor.http.HttpMethod
+import io.ktor.http.appendPathSegments
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
@@ -20,10 +21,14 @@ abstract class BaseRepository(
     ): NetworkResponse<R> {
         return withContext(Dispatchers.IO) {
             try {
-                val response = clientProvider.client.request(endpoint) {
+                val response = clientProvider.client.request {
                     this.method = method
-                    queryParams?.forEach { (key, value) ->
-                        url.parameters.append(key, value.toString())
+                    url {
+                        appendPathSegments(endpoint)
+
+                        queryParams?.forEach { (key, value) ->
+                            parameters.append(key, value.toString())
+                        }
                     }
                 }
                 return@withContext response.convertToNetworkResponse<R>()
