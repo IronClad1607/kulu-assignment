@@ -24,7 +24,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun MovieListScreen(
-    navigateToMovieDetail: () -> Unit,
+    navigateToMovieDetail: (movieId: Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MovieListViewModel = koinViewModel()
 ) {
@@ -41,7 +41,7 @@ fun MovieListScreen(
 fun MovieListScreenContent(
     uiState: MovieListUIState,
     onEvent: (MovieListUIEvent) -> Unit = {},
-    navigateToMovieDetail: () -> Unit = {},
+    navigateToMovieDetail: (Long) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -107,7 +107,7 @@ fun MovieListScreenContent(
                         onEvent(MovieListUIEvent.LoadNextPage)
                     },
                     onItemClick = {
-                        navigateToMovieDetail()
+                        navigateToMovieDetail(it.movieId)
                     },
                     modifier = Modifier.padding(top = 16.dp)
                 )

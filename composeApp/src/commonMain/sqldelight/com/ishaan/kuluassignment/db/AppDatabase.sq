@@ -9,7 +9,7 @@ CREATE TABLE MovieEntity(
 );
 
 selectAllMovies:
-SELECT * FROM MovieEntity ORDER BY sortOrder ASC ;
+SELECT * FROM MovieEntity ORDER BY sortOrder ASC;
 
 insertMovie:
 INSERT OR REPLACE INTO MovieEntity(movieId, title, overview, posterPath, backdropPath, page, sortOrder)
@@ -20,3 +20,6 @@ SELECT MAX(page) FROM MovieEntity;
 
 deleteAllMovies:
 DELETE FROM MovieEntity;
+
+getMovieById:
+SELECT * FROM MovieEntity WHERE movieId = ?;

@@ -4,13 +4,13 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.ishaan.kuluassignment.base.BaseRepository
 import com.ishaan.kuluassignment.db.MovieDatabase
+import com.ishaan.kuluassignment.db.MovieEntity
 import com.ishaan.kuluassignment.networking.ClientProvider
 import com.ishaan.kuluassignment.networking.NetworkResponse
-import com.ishaan.kuluassignment.utils.Logger
 import io.ktor.http.HttpMethod
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kuluassignment.composeapp.generated.resources.Res
+import kotlinx.coroutines.withContext
 
 class MovieRepository(
     clientProvider: ClientProvider,
@@ -21,6 +21,14 @@ class MovieRepository(
         .selectAllMovies()
         .asFlow()
         .mapToList(Dispatchers.IO)
+
+    suspend fun getMovieById(movieId: Long): MovieEntity? {
+        return withContext(Dispatchers.IO) {
+            movieDatabase.appDatabaseQueries
+                .getMovieById(movieId)
+                .executeAsOneOrNull()
+        }
+    }
 
     fun getLastLoadedPage(): Long {
         return movieDatabase.appDatabaseQueries.getLastPage().executeAsOne().MAX ?: 0
