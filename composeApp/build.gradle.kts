@@ -1,4 +1,4 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
@@ -78,6 +78,8 @@ kotlin {
             implementation(libs.koin.compose.viewmodel.navigation)
             implementation(libs.navigation.compose)
             implementation(libs.sqldelight.coroutines)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
 
             implementation(libs.kotlinx.serialization.core)
             implementation(libs.kotlinx.serialization.json)

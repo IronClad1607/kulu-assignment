@@ -1,24 +1,23 @@
 package com.ishaan.kuluassignment.features.movie_list.view
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.*
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.ishaan.kuluassignment.base.ErrorComposable
 import com.ishaan.kuluassignment.base.LoadingComposable
+import com.ishaan.kuluassignment.db.MovieEntity
 import com.ishaan.kuluassignment.features.movie_list.viewmodel.MovieListUIEvent
 import com.ishaan.kuluassignment.features.movie_list.viewmodel.MovieListUIState
 import com.ishaan.kuluassignment.features.movie_list.viewmodel.MovieListViewModel
 import com.ishaan.kuluassignment.theme.MyAppTheme
-import com.ishaan.kuluassignment.utils.Logger
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -29,14 +28,6 @@ fun MovieListScreen(
     viewModel: MovieListViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    LaunchedEffect(uiState) {
-        Logger.testLog.d {
-            buildString {
-                appendLine("isLoading: ${uiState.isLoading}")
-                appendLine("movies: ${uiState.movies.size}")
-            }
-        }
-    }
     MovieListScreenContent(
         uiState = uiState,
         onEvent = viewModel::onEvent,
@@ -62,7 +53,7 @@ fun MovieListScreenContent(
                     SearchBar(
                         searchText = uiState.searchText,
                         onSearchTextChange = {
-
+                            onEvent(MovieListUIEvent.OnSearchQueryChanged(it))
                         },
                         onCloseClick = {
                             onEvent(MovieListUIEvent.OnSearchIconClicked(false))
@@ -83,12 +74,14 @@ fun MovieListScreenContent(
         Box(
             modifier = Modifier.fillMaxSize()
                 .padding(innerPadding)
+                .padding(horizontal = 16.dp)
         ) {
             if (uiState.isOffline || uiState.paginationError != null) {
                 OfflineIndicator(
                     isOffline = uiState.isOffline,
                     paginationError = uiState.paginationError,
                     modifier = Modifier.align(Alignment.BottomCenter)
+                        .zIndex(1f)
                 )
             }
 
@@ -97,15 +90,80 @@ fun MovieListScreenContent(
                     message = uiState.error,
                     onRetryClicked = {
                         onEvent(MovieListUIEvent.OnSearchQueryChanged(uiState.searchText))
-                    },
-                    modifier = Modifier.padding(innerPadding)
+                    }
                 )
             } else if (uiState.isLoading && uiState.movies.isEmpty()) {
-                LoadingComposable(
-                    modifier = Modifier.padding(innerPadding)
-                )
+                LoadingComposable()
             } else {
+                MovieGrid(
+                    movies = uiState.movies,
+                    isLoadingMore = uiState.isPaginationLoading,
+                    onLoadMore = {
+                        onEvent(MovieListUIEvent.LoadNextPage)
+                    },
+                    onItemClick = {
+                        navigateToMovieDetail()
+                    },
+                    modifier = Modifier.padding(top = 16.dp)
+                )
+            }
+        }
+    }
+}
 
+@Composable
+fun MovieGrid(
+    movies: List<MovieEntity>,
+    isLoadingMore: Boolean,
+    onLoadMore: () -> Unit,
+    onItemClick: (MovieEntity) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val gridState = rememberLazyGridState()
+    val shouldLoadMore = remember {
+        derivedStateOf {
+            val layoutInfo = gridState.layoutInfo
+            val totalItems = layoutInfo.totalItemsCount
+            val lastVisibleItemIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+
+            // Trigger when within 4 items of the end
+            lastVisibleItemIndex >= (totalItems - 4) && totalItems > 0
+        }
+    }
+    LaunchedEffect(shouldLoadMore.value) {
+        if (shouldLoadMore.value) {
+            onLoadMore()
+        }
+    }
+
+    LazyVerticalGrid(
+        state = gridState,
+        columns = GridCells.Fixed(2),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier.fillMaxSize()
+    ) {
+        items(movies) {
+            MovieItem(
+                posterPath = it.posterPath ?: "",
+                title = it.title,
+                onClick = {
+                    onItemClick(it)
+                },
+            )
+        }
+        if (isLoadingMore) {
+            item(
+                span = { GridItemSpan(2) }
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
             }
         }
     }
@@ -116,8 +174,7 @@ fun MovieListScreenContent(
 fun MovieListScreenContentPreview() {
     MyAppTheme {
         MovieListScreenContent(
-            uiState = MovieListUIState(
-            )
+            uiState = MovieListUIState()
         )
     }
 }
@@ -127,8 +184,7 @@ fun MovieListScreenContentPreview() {
 fun MovieListScreenContentDarkPreview() {
     MyAppTheme(darkTheme = true) {
         MovieListScreenContent(
-            uiState = MovieListUIState(
-            )
+            uiState = MovieListUIState()
         )
     }
 }

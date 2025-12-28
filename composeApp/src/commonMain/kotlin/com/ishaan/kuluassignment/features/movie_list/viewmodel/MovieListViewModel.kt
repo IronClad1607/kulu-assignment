@@ -5,8 +5,7 @@ import com.ishaan.kuluassignment.base.BaseViewModel
 import com.ishaan.kuluassignment.features.movie_list.model.MovieRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class MovieListViewModel(
@@ -14,6 +13,7 @@ class MovieListViewModel(
 ) : BaseViewModel<MovieListUIState, MovieListUIEvent>(MovieListUIState()) {
 
     private var searchJob: Job? = null
+    private val _searchQueryFlow = MutableStateFlow("")
 
     init {
         observeMovies()
@@ -21,19 +21,35 @@ class MovieListViewModel(
     }
 
     private fun observeMovies() {
-        movieRepository.moviesFlow
-            .onEach { cachedMovie ->
-                safeUpdateState { oldState ->
-                    val maxPage = cachedMovie.maxOfOrNull { it.page }?.toInt() ?: 0
-                    oldState.copy(
-                        movies = cachedMovie,
-                        currentPage = maxPage,
-                        isLoading = if (cachedMovie.isNotEmpty()) false else oldState.isLoading,
-                        error = if (cachedMovie.isNotEmpty()) null else oldState.error
-                    )
+        val isOfflineFlow = uiState.map { it.isOffline }.distinctUntilChanged()
+        combine(
+            movieRepository.moviesFlow,
+            _searchQueryFlow,
+            isOfflineFlow
+        ) { cachedMovies, query, isOffline ->
+            val maxPage = cachedMovies.maxOfOrNull { it.page }?.toInt() ?: 0
+
+            // Perform filtering
+            val filteredMovies = if (query.isNotEmpty() && isOffline) {
+                cachedMovies.filter {
+                    it.title.contains(query, ignoreCase = true)
                 }
+            } else {
+                cachedMovies
             }
-            .launchIn(viewModelScope)
+
+            // Return the calculated data to the onEach block
+            Triple(filteredMovies, cachedMovies, maxPage)
+        }.onEach { (filteredMovies, originalCachedMovies, maxPage) ->
+            safeUpdateState { oldState ->
+                oldState.copy(
+                    movies = filteredMovies,
+                    currentPage = maxPage,
+                    isLoading = if (originalCachedMovies.isNotEmpty()) false else oldState.isLoading,
+                    error = if (originalCachedMovies.isNotEmpty()) null else oldState.error
+                )
+            }
+        }.launchIn(viewModelScope)
     }
 
     private fun loadInitialData() {
@@ -70,7 +86,6 @@ class MovieListViewModel(
                     } else {
                         oldState.copy(
                             isSearchOpen = true,
-                            searchText = ""
                         )
                     }
                 }
@@ -88,6 +103,8 @@ class MovieListViewModel(
 
     private fun onSearchQueryChanged(query: String) {
         safeUpdateState { it.copy(searchText = query) }
+
+        _searchQueryFlow.value = query
 
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
