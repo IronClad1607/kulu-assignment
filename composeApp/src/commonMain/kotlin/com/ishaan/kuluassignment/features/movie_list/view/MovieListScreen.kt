@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import com.ishaan.kuluassignment.base.EmptyComposable
 import com.ishaan.kuluassignment.base.ErrorComposable
 import com.ishaan.kuluassignment.base.LoadingComposable
 import com.ishaan.kuluassignment.db.MovieEntity
@@ -94,6 +95,10 @@ fun MovieListScreenContent(
                 )
             } else if (uiState.isLoading && uiState.movies.isEmpty()) {
                 LoadingComposable()
+            } else if (uiState.movies.isEmpty()) {
+                EmptyComposable(
+                    message = "No movies found"
+                )
             } else {
                 MovieGrid(
                     movies = uiState.movies,
