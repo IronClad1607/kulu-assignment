@@ -2,7 +2,6 @@ package com.ishaan.kuluassignment.networking
 
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
-import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 
 sealed class NetworkResponse<out T> {

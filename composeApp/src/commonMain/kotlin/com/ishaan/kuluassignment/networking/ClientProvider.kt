@@ -1,16 +1,13 @@
 package com.ishaan.kuluassignment.networking
 
 import com.ishaan.kuluassignment.BuildConfig
-import com.ishaan.kuluassignment.utils.platform.PlatformSettings
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-class ClientProvider(
-    platformSettings: PlatformSettings
-) {
+class ClientProvider {
     val client = HttpClient {
         install(ContentNegotiation) {
             json(Json {

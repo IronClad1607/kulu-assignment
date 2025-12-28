@@ -128,7 +128,7 @@ buildConfig {
 
 sqldelight {
     databases {
-        create("MovieDatabase") { // This name becomes your main Database class
+        create("MovieDatabase") {
             packageName.set("com.ishaan.kuluassignment.db")
         }
     }
