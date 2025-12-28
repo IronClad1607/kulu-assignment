@@ -25,7 +25,7 @@ class ClientProvider(
         install(LoggingPlugin)
 
         defaultRequest {
-            url {
+            url(BaseURL.API_BASE_URL) {
                 parameters.append("api_key", BuildConfig.TMDB_API_KEY)
                 parameters.append("language", "en-US")
             }
