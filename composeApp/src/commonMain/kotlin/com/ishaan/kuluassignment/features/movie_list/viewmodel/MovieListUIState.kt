@@ -9,9 +9,13 @@ data class MovieListUIState(
     val isPaginationLoading: Boolean = false,
     val paginationError: String? = null,
     val isOffline: Boolean = false,
-    val currentPage: Int = 0
+    val currentPage: Int = 0,
+    val isSearchOpen: Boolean = false,
+    val searchText: String = "",
 )
 
-sealed class MovieListUIEvent {
-
+sealed interface MovieListUIEvent {
+    data class OnSearchIconClicked(val isOpen: Boolean) : MovieListUIEvent
+    data class OnSearchQueryChanged(val query: String) : MovieListUIEvent
+    data object LoadNextPage: MovieListUIEvent
 }
