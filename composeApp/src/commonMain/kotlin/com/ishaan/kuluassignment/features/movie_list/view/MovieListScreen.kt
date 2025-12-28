@@ -1,13 +1,19 @@
 package com.ishaan.kuluassignment.features.movie_list.view
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.ishaan.kuluassignment.base.ErrorComposable
+import com.ishaan.kuluassignment.base.LoadingComposable
 import com.ishaan.kuluassignment.features.movie_list.viewmodel.MovieListUIEvent
 import com.ishaan.kuluassignment.features.movie_list.viewmodel.MovieListUIState
 import com.ishaan.kuluassignment.features.movie_list.viewmodel.MovieListViewModel
@@ -70,9 +76,38 @@ fun MovieListScreenContent(
                     )
                 }
             }
-        }
-    ) {innerPadding ->
+        },
+        containerColor = MaterialTheme.colorScheme.background,
+        modifier = modifier
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier.fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            if (uiState.isOffline || uiState.paginationError != null) {
+                OfflineIndicator(
+                    isOffline = uiState.isOffline,
+                    paginationError = uiState.paginationError,
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
+            }
 
+            if (uiState.error != null && uiState.movies.isEmpty()) {
+                ErrorComposable(
+                    message = uiState.error,
+                    onRetryClicked = {
+                        onEvent(MovieListUIEvent.OnSearchQueryChanged(uiState.searchText))
+                    },
+                    modifier = Modifier.padding(innerPadding)
+                )
+            } else if (uiState.isLoading && uiState.movies.isEmpty()) {
+                LoadingComposable(
+                    modifier = Modifier.padding(innerPadding)
+                )
+            } else {
+
+            }
+        }
     }
 }
 
@@ -81,7 +116,8 @@ fun MovieListScreenContent(
 fun MovieListScreenContentPreview() {
     MyAppTheme {
         MovieListScreenContent(
-            uiState = MovieListUIState()
+            uiState = MovieListUIState(
+            )
         )
     }
 }
@@ -91,7 +127,8 @@ fun MovieListScreenContentPreview() {
 fun MovieListScreenContentDarkPreview() {
     MyAppTheme(darkTheme = true) {
         MovieListScreenContent(
-            uiState = MovieListUIState()
+            uiState = MovieListUIState(
+            )
         )
     }
 }

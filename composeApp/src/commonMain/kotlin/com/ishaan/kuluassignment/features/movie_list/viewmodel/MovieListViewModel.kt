@@ -3,7 +3,6 @@ package com.ishaan.kuluassignment.features.movie_list.viewmodel
 import androidx.lifecycle.viewModelScope
 import com.ishaan.kuluassignment.base.BaseViewModel
 import com.ishaan.kuluassignment.features.movie_list.model.MovieRepository
-import com.ishaan.kuluassignment.utils.Logger
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
