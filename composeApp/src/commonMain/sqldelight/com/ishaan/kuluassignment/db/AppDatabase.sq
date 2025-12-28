@@ -1,4 +1,4 @@
-CREATE TABLE movie_entity(
+CREATE TABLE MovieEntity(
     movieId INTEGER NOT NULL UNIQUE,
     title TEXT NOT NULL,
     overview TEXT NOT NULL,
@@ -9,5 +9,14 @@ CREATE TABLE movie_entity(
 );
 
 selectAllMovies:
-SELECT * FROM movie_entity ORDER BY sortOrder ASC ;
+SELECT * FROM MovieEntity ORDER BY sortOrder ASC ;
 
+insertMovie:
+INSERT OR REPLACE INTO MovieEntity(movieId, title, overview, posterPath, backdropPath, page, sortOrder)
+VALUES (?,?,?,?,?,?,?);
+
+getLastPage:
+SELECT MAX(page) FROM MovieEntity;
+
+deleteAllMovies:
+DELETE FROM MovieEntity;
