@@ -15,14 +15,33 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     listOf(
+        iosX64(),
         iosArm64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
+        val konan = iosTarget.konanTarget.name
+        val slice = when (konan) {
+            "ios_arm64" -> "ios-arm64"
+            "ios_x64", "ios_simulator_arm64" -> "ios-arm64_x86_64-simulator"
+            else -> error("Unknown iOS target: $konan")
+        }
+
+        iosTarget.compilations.getByName("main").compilerOptions.configure {
+            freeCompilerArgs.add("-Xsystem-framework=Network")
+        }
+
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+
+            // Keep the export line for the framework's visibility
+            export("platform.Network:Network")
+
+            // CORRECT WAY to add linker flags 🛠️
+            linkerOpts.add("-framework")
+            linkerOpts.add("Network")
         }
     }
     
@@ -70,6 +89,21 @@ kotlin {
             implementation(libs.kotlin.test)
         }
 
+        val commonMain by getting
+        val iosX64Main by getting
+        val iosArm64Main by getting
+        val iosSimulatorArm64Main by getting
+
+        val iosMain = findByName("iosMain") ?: create("iosMain").apply {
+            dependsOn(commonMain)
+        }
+
+        // hook the platform-specific mains up to iosMain:
+        iosX64Main.dependsOn(iosMain)
+        iosArm64Main.dependsOn(iosMain)
+        iosSimulatorArm64Main.dependsOn(iosMain)
+
+        // finally, add your Darwin client into iosMain:
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
             implementation(libs.sqldelight.driver.native)
