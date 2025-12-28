@@ -2,15 +2,16 @@ package com.ishaan.kuluassignment.networking
 
 import com.ishaan.kuluassignment.BuildConfig
 import io.ktor.client.HttpClient
-import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.http.takeFrom
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
+// Http Client Provider for API Call using Ktor
 class ClientProvider {
     val client = HttpClient {
+        // Configure JSON serialization
         install(ContentNegotiation) {
             json(Json {
                 ignoreUnknownKeys = true
@@ -21,14 +22,10 @@ class ClientProvider {
             })
         }
 
+        // Log Request and Response
         install(LoggingPlugin)
 
-        install(HttpTimeout) {
-            requestTimeoutMillis = 15_000 // 15 seconds
-            connectTimeoutMillis = 15_000 // 15 seconds
-            socketTimeoutMillis = 15_000  // 15 seconds
-        }
-
+        // Base URL Configuration
         defaultRequest {
             url {
                 takeFrom(BaseURL.API_BASE_URL)

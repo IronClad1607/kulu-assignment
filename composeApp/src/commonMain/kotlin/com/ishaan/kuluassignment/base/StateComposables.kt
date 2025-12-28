@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+// Loading State Composable
 @Composable
 fun LoadingComposable(modifier: Modifier = Modifier) {
     Box(
@@ -24,6 +25,7 @@ fun LoadingComposable(modifier: Modifier = Modifier) {
     }
 }
 
+// Empty State Composable
 @Composable
 fun EmptyComposable(
     message: String = "No data available",
@@ -43,6 +45,8 @@ fun EmptyComposable(
     }
 }
 
+
+// Error State Composable
 @Composable
 fun ErrorComposable(
     message: String,

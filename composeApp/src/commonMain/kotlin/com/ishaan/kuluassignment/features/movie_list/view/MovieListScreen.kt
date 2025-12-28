@@ -22,6 +22,7 @@ import com.ishaan.kuluassignment.theme.MyAppTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
+// Movie List Screen Composable
 @Composable
 fun MovieListScreen(
     navigateToMovieDetail: (movieId: Long) -> Unit,
@@ -37,6 +38,7 @@ fun MovieListScreen(
     )
 }
 
+// Movie List Screen Content Composable
 @Composable
 fun MovieListScreenContent(
     uiState: MovieListUIState,
@@ -116,6 +118,7 @@ fun MovieListScreenContent(
     }
 }
 
+// Movie Grid Composable
 @Composable
 fun MovieGrid(
     movies: List<MovieEntity>,

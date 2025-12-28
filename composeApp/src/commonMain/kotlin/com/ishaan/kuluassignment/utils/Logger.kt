@@ -19,4 +19,9 @@ object Logger {
         config = loggerConfigInit(platformLogWriter()),
         tag = "Crash/Error"
     )
+
+    val analyticLog = Logger(
+        config = loggerConfigInit(platformLogWriter()),
+        tag = "Analytic"
+    )
 }

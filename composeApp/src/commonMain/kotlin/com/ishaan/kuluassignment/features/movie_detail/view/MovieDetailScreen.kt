@@ -23,6 +23,7 @@ import com.ishaan.kuluassignment.base.LoadingComposable
 import com.ishaan.kuluassignment.features.movie_detail.viewmodel.MovieDetailViewModel
 import com.ishaan.kuluassignment.networking.BaseURL
 import com.ishaan.kuluassignment.theme.MyAppTheme
+import com.ishaan.kuluassignment.utils.Logger
 import kuluassignment.composeapp.generated.resources.Res
 import kuluassignment.composeapp.generated.resources.ic_error_image
 import kuluassignment.composeapp.generated.resources.ic_placeholder_image
@@ -38,10 +39,20 @@ fun MovieDetailScreen(
     modifier: Modifier = Modifier,
     viewModel: MovieDetailViewModel = koinViewModel()
 ) {
+    // Log screen open event
+    LaunchedEffect(Unit) {
+        Logger.analyticLog.i {
+            "Movie Detail Screen Opened with movieId: $movieId"
+        }
+    }
+
     val uiState by viewModel.uiState.collectAsState()
+
+    // Get movie details when the screen is opened
     LaunchedEffect(Unit) {
         viewModel.getMovieDetails(movieId)
     }
+
     Scaffold(
         topBar = {
             TopAppBar(

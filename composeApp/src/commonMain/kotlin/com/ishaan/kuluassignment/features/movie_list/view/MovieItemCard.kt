@@ -24,6 +24,7 @@ import kuluassignment.composeapp.generated.resources.ic_placeholder_image
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
+// Movie Item Composable
 @Composable
 fun MovieItem(
     posterPath: String,

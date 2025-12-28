@@ -8,6 +8,5 @@ data class MovieDetailUIState(
     val error: String? = null
 )
 
-sealed class MovieDetailUIEvent {
-}
+sealed class MovieDetailUIEvent { /* no-op */ }
 

@@ -1,10 +1,11 @@
-package com.ishaan.kuluassignment.features.movie_list.model
+package com.ishaan.kuluassignment.features
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.ishaan.kuluassignment.base.BaseRepository
 import com.ishaan.kuluassignment.db.MovieDatabase
 import com.ishaan.kuluassignment.db.MovieEntity
+import com.ishaan.kuluassignment.features.movie_list.model.GetMoviesResponse
 import com.ishaan.kuluassignment.networking.ClientProvider
 import com.ishaan.kuluassignment.networking.NetworkResponse
 import io.ktor.http.HttpMethod
@@ -17,11 +18,13 @@ class MovieRepository(
     private val movieDatabase: MovieDatabase
 ) : BaseRepository(clientProvider) {
 
+    // Observable flow to get movies from the database
     val moviesFlow = movieDatabase.appDatabaseQueries
         .selectAllMovies()
         .asFlow()
         .mapToList(Dispatchers.IO)
 
+    // Get movie by ID from the database
     suspend fun getMovieById(movieId: Long): MovieEntity? {
         return withContext(Dispatchers.IO) {
             movieDatabase.appDatabaseQueries
@@ -30,10 +33,12 @@ class MovieRepository(
         }
     }
 
+    // Get last loaded page from the database
     fun getLastLoadedPage(): Long {
         return movieDatabase.appDatabaseQueries.getLastPage().executeAsOne().MAX ?: 0
     }
 
+    // Search for movies by query
     suspend fun searchMovies(query: String, page: Int, isRefresh: Boolean = false): Result<Unit> {
         return fetchMovies(
             endpoint = "search/movie",
@@ -47,6 +52,7 @@ class MovieRepository(
         )
     }
 
+    // Fetch and save movies from the network
     suspend fun fetchAndSaveMovies(page: Int, isRefresh: Boolean = false): Result<Unit> {
         return fetchMovies(
             endpoint = "trending/movie/week",
@@ -56,20 +62,24 @@ class MovieRepository(
         )
     }
 
+    // Common Function to fetch and save movies from the network
     private suspend fun fetchMovies(
         endpoint: String,
         queryParams: Map<String, Any>,
         page: Int,
         isRefresh: Boolean
     ): Result<Unit> {
+        // Make network call
         val response = makeNetworkCall<GetMoviesResponse>(
-            method = HttpMethod.Get,
+            method = HttpMethod.Companion.Get,
             endpoint = endpoint,
             queryParams = queryParams
         )
 
+        // Process response
         return when (response) {
             is NetworkResponse.Error -> {
+                // Handle error response
                 Result.failure(Exception(response.message))
             }
 
@@ -77,11 +87,14 @@ class MovieRepository(
                 val movies = response.data.movies
 
                 try {
+                    // Save movies to database
                     movieDatabase.transaction {
                         if (isRefresh) {
+                            // Clear existing data if refreshing
                             movieDatabase.appDatabaseQueries.deleteAllMovies()
                         }
 
+                        // Insert new data
                         val startOrder = (page - 1) * 20
                         movies.forEachIndexed { index, movie ->
                             movieDatabase.appDatabaseQueries.insertMovie(
@@ -102,9 +115,5 @@ class MovieRepository(
                 }
             }
         }
-    }
-
-    suspend fun clearCache() {
-        movieDatabase.appDatabaseQueries.deleteAllMovies()
     }
 }

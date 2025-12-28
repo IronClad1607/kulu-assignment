@@ -1,19 +1,20 @@
 package com.ishaan.kuluassignment.base
 
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
+/**
+ * Base view model class that provides common functionality for view models.
+ *
+ * @param initialState The initial state of the view model.
+ */
 abstract class BaseViewModel<S, E>(initialState: S) : ViewModel() {
 
+    // State flow for the current UI state
     protected val _uiState = MutableStateFlow(initialState)
     val uiState = _uiState.asStateFlow()
-
-    protected val _events = MutableSharedFlow<E>()
-    val events = _events.asSharedFlow()
 
     /**
      * Safely updates the current UI state using the provided update lambda.

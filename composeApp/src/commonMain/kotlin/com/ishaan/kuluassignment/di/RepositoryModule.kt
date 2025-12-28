@@ -1,6 +1,6 @@
 package com.ishaan.kuluassignment.di
 
-import com.ishaan.kuluassignment.features.movie_list.model.MovieRepository
+import com.ishaan.kuluassignment.features.MovieRepository
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 

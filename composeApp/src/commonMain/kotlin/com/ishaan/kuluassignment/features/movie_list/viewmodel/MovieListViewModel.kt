@@ -2,7 +2,8 @@ package com.ishaan.kuluassignment.features.movie_list.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.ishaan.kuluassignment.base.BaseViewModel
-import com.ishaan.kuluassignment.features.movie_list.model.MovieRepository
+import com.ishaan.kuluassignment.features.MovieRepository
+import com.ishaan.kuluassignment.utils.Logger
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -12,6 +13,7 @@ class MovieListViewModel(
     private val movieRepository: MovieRepository
 ) : BaseViewModel<MovieListUIState, MovieListUIEvent>(MovieListUIState()) {
 
+    // Search related properties
     private var searchJob: Job? = null
     private val _searchQueryFlow = MutableStateFlow("")
 
@@ -20,6 +22,8 @@ class MovieListViewModel(
         loadInitialData()
     }
 
+
+    // Observe movies from the repository and update the UI state
     private fun observeMovies() {
         val isOfflineFlow = uiState.map { it.isOffline }.distinctUntilChanged()
         combine(
@@ -52,7 +56,11 @@ class MovieListViewModel(
         }.launchIn(viewModelScope)
     }
 
+    // Load initial data from the repository
     private fun loadInitialData() {
+        Logger.analyticLog.i {
+            "Loading initial data"
+        }
         if (uiState.value.movies.isEmpty()) {
             safeUpdateState { it.copy(isLoading = true, error = null) }
         }
@@ -61,6 +69,7 @@ class MovieListViewModel(
         }
     }
 
+    // Load next page of data from the repository
     private fun loadNextPage() {
         val state = uiState.value
         if (state.isPaginationLoading || state.isLoading) return
@@ -68,14 +77,21 @@ class MovieListViewModel(
         safeUpdateState { it.copy(isPaginationLoading = true, paginationError = null) }
 
         viewModelScope.launch {
+            // get current page from repository
             val lastPage = movieRepository.getLastLoadedPage().toInt()
             val nextPage = lastPage + 1
+
+            Logger.analyticLog.i {
+                "Loading next page: $nextPage"
+            }
+            // load data
             loadData(isRefresh = false, pageOverride = nextPage)
         }
     }
 
     fun onEvent(event: MovieListUIEvent) {
         when (event) {
+            // Handle search icon click
             is MovieListUIEvent.OnSearchIconClicked -> {
                 safeUpdateState { oldState ->
                     if (!event.isOpen) {
@@ -91,16 +107,19 @@ class MovieListViewModel(
                 }
             }
 
+            // Handle search query change
             is MovieListUIEvent.OnSearchQueryChanged -> {
                 onSearchQueryChanged(event.query)
             }
 
+            // Handle load next page event
             MovieListUIEvent.LoadNextPage -> {
                 loadNextPage()
             }
         }
     }
 
+    // Handle search query change
     private fun onSearchQueryChanged(query: String) {
         safeUpdateState { it.copy(searchText = query) }
 
@@ -110,23 +129,28 @@ class MovieListViewModel(
         searchJob = viewModelScope.launch {
             delay(500) // Debounce
 
+            Logger.analyticLog.i {
+                "Searching movie using: $query"
+            }
+
             // Trigger a refresh (page 1) with the new query
             loadData(isRefresh = true)
         }
     }
 
+    // Common Function to load data from the repository
     private suspend fun loadData(isRefresh: Boolean, pageOverride: Int? = null) {
         val query = uiState.value.searchText
         val page = pageOverride ?: 1
 
-        // 1. Choose Endpoint
+        // Choose Endpoint
         val result = if (query.isNotEmpty()) {
             movieRepository.searchMovies(query, page, isRefresh)
         } else {
             movieRepository.fetchAndSaveMovies(page, isRefresh)
         }
 
-        // 2. Handle Result
+        // Handle Result
         result.onSuccess {
             safeUpdateState {
                 it.copy(
